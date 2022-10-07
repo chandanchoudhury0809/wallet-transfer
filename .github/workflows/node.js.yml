@@ -16,18 +16,18 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: borales/actions-yarn@v3.0.0
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run deploy
-    - run: git add .
-    - run: git commit -m "Deploying latest commit"
-    - run: git push origin master
+        cmd: install
+    - uses: borales/actions-yarn@v3.0.0
+      with:
+        cmd: build # will run `yarn build` command
+    - uses: borales/actions-yarn@v3.0.0
+      with:
+        cmd: deploy # will run `yarn deploy` command
