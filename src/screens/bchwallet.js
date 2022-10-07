@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { Form, Button } from "react-bootstrap";
 import swal from "sweetalert";
-import { sendBch, getBal } from "../functions/bchUtils";
+import { sendBch } from "../functions/bchUtils";
+import { getBchAccountBalance } from "../functions/bch2";
 
 const Bchwallet = () => {
   const [address, setAddress] = useState("");
@@ -33,11 +34,12 @@ const Bchwallet = () => {
     e.preventDefault();
     console.log("Bal check mnemonics =", mnemonics);
     try {
-      const bal = await getBal(mnemonics);
+      // const bal = await getBal(mnemonics);
+      const bal = await getBchAccountBalance(address);
       console.log("bal =", bal);
       swal({
         title: "Balance",
-        text: `Your balance is : ${bal}`,
+        text: `Your balance is : ${bal} BCH`,
         icon: "success",
       });
     } catch {
@@ -93,10 +95,10 @@ const Bchwallet = () => {
           <FormControl>
             <Form.Control
               type="text"
-              placeholder="Mnemonics"
+              placeholder="Address"
               size="sm"
-              name="Mnemonics"
-              onChange={(e) => setMnemonic(e.target.value)}
+              name="Address"
+              onChange={(e) => setAddress(e.target.value)}
             />
           </FormControl>
           <ButtonControl>

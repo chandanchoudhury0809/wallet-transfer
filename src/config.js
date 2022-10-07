@@ -1,5 +1,7 @@
 const network = "testnet";
+const isDev = false;
 
-module.exports ={
+module.exports = {
   network,
-}
+  isDev,
+};
