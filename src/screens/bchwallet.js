@@ -1,38 +1,76 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Form, Button } from "react-bootstrap";
 import swal from "sweetalert";
+import { sendBch, getBal } from "../functions/bchUtils";
 
-const handleSubmit = (e) => {
-  e.preventDefault();
-  swal({
-    title: "Sent!!!",
-    text: "Transaction successful.",
-    icon: "success",
-  });
-  document.getElementById("form").reset();
-};
 const Bchwallet = () => {
+  const [address, setAddress] = useState("");
+  const [amount, setAmount] = useState("");
+  const [mnemonics, setMnemonic] = useState("");
+  const handleSend = async (e) => {
+    e.preventDefault();
+    try {
+      console.log("address =", address);
+      console.log("amount =", address);
+      console.log("mnemonics =", mnemonics);
+      const txid = await sendBch(address, amount, mnemonics);
+      swal({
+        title: "Sent!!!",
+        text: `Transaction successful. Transaction ID : ${txid}`,
+        icon: "success",
+      });
+    } catch {
+      swal({
+        title: "Failed!!!",
+        text: "Transaction Failed.",
+        icon: "warning",
+      });
+    }
+    document.getElementById("form").reset();
+  };
+  const handleBalCheck = async (e) => {
+    e.preventDefault();
+    console.log("Bal check mnemonics =", mnemonics);
+    try {
+      const bal = await getBal(mnemonics);
+      console.log("bal =", bal);
+      swal({
+        title: "Balance",
+        text: `Your balance is : ${bal}`,
+        icon: "success",
+      });
+    } catch {
+      swal({
+        title: "Failed!!!",
+        text: "Error getting Balance.",
+        icon: "warning",
+      });
+    }
+    document.getElementById("bal-form").reset();
+  };
   return (
     <Wrapper>
       <FormWrapper>
         <h1>Wallet Form</h1>
-        <Form onSubmit={handleSubmit} id="form">
+        <Form id="form">
           <FormControl>
             <Form.Control
               type="text"
               placeholder="Receiver's Address"
               size="sm"
               name="Receiver's Address"
+              onChange={(e) => setAddress(e.target.value)}
             />
           </FormControl>
           <br />
           <FormControl>
             <Form.Control
-              type="number"
+              type="text"
               placeholder="Amount"
               size="sm"
               name="Amount"
+              onChange={(e) => setAmount(e.target.value)}
             />
           </FormControl>
           <br />
@@ -42,11 +80,28 @@ const Bchwallet = () => {
               placeholder="Mnemonics"
               size="sm"
               name="Mnemonics"
+              onChange={(e) => setMnemonic(e.target.value)}
             />
           </FormControl>
           <ButtonControl>
-            <ButtonSend variant="dark" type="submit" size="sm">
+            <ButtonSend variant="dark" onClick={handleSend} size="sm">
               Send
+            </ButtonSend>
+          </ButtonControl>
+        </Form>
+        <Form id="bal-form">
+          <FormControl>
+            <Form.Control
+              type="text"
+              placeholder="Mnemonics"
+              size="sm"
+              name="Mnemonics"
+              onChange={(e) => setMnemonic(e.target.value)}
+            />
+          </FormControl>
+          <ButtonControl>
+            <ButtonSend variant="dark" onClick={handleBalCheck} size="sm">
+              Check Balance
             </ButtonSend>
           </ButtonControl>
         </Form>
