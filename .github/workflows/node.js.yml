@@ -26,8 +26,9 @@ jobs:
       with:
         cmd: install
     - run: yarn build
-    - run: ls
-    - run: node ./node_modules/gh-pages/bin/gh-pages.js -d build 
+    - run: git config --global user.email anubhab-patnaik
+    - run: git config --global user.name anubhab.patnaik@squbix.com
+    - run: rm -rf docs && cp -r build docs
     - run: git add .
     - run: git commit -m "Deploying latest commit"
-    - run: git push origin master
+    - run: git push origin main
