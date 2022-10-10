@@ -6,19 +6,12 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Swal from "sweetalert2";
 import { sendBch } from "../functions/bch2";
 import { getBchAccountBalance } from "../functions/bch2";
-import Spinner from "react-bootstrap/Spinner";
+// import Spinner from "react-bootstrap/Spinner";
 import { getFee } from "../functions/bch2";
 
-function Spin() {
-  return (
-    <Spinner animation="border" role="status">
-      <span className="visually-hidden">Loading...</span>
-    </Spinner>
-  );
-}
 const Bchwallet = () => {
   const [raddress, setRaddress] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [saddress, setSaddress] = useState("");
   const [amount, setAmount] = useState(0);
   const [balance, setBalance] = useState("0");
@@ -29,11 +22,10 @@ const Bchwallet = () => {
       const getBalance = async () => {
         const balance = await getBchAccountBalance(saddress, false);
         const fee = await getFee(saddress);
-        setMaxAmt((balance * 1e8 - fee.safe) / 1e8);
+        setMaxAmt((balance * 1e8 - fee.safe - 7000) / 1e8);
         setBalance(balance.toString());
         console.log("Here is the balance", balance.toString());
         console.log("Here is the fee", fee.safe);
-        console.log("Here is the max amount", maxAmt);
 
       };
       getBalance();
@@ -46,16 +38,17 @@ const Bchwallet = () => {
       });
       setBalance(0);
     }
-  }, [saddress, amount, maxAmt]);
+  }, [saddress]);
 
   const handleSend = async (e) => {
+    console.log("amount",amount);
     let amount_to_transfer_trimmed = String(parseFloat(amount).toFixed(7));
     const bal = await getBchAccountBalance(saddress);
     let selbal = String(parseFloat(bal).toFixed(7));
     e.preventDefault();
     try {
       console.log("address =", raddress);
-      console.log("amount =", raddress);
+      console.log("amount =", amount);
       console.log("mnemonics =", mnemonics);
       const txid = await sendBch(
         saddress,
@@ -66,8 +59,9 @@ const Bchwallet = () => {
       );
       Swal.fire({
         title: "Sent!!!",
-        text: `Transaction successful. Transaction ID : ${txid}`,
+        text: "Transaction successful.",
         icon: 'success',
+        html : `<a href="https://blockchair.com/bitcoin-cash/transaction/${txid}" target="_blank">View on Explorer</a>`
       })
     } catch {
       Swal.fire({
@@ -78,29 +72,29 @@ const Bchwallet = () => {
     }
     document.getElementById("form").reset();
   };
-  const handleBalCheck = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    console.log("Bal check mnemonics =", mnemonics);
-    try {
-      // const bal = await getBal(mnemonics);
-      const bal = await getBchAccountBalance(raddress);
-      console.log("bal =", bal);
-      Swal.fire({
-        title: "Balance",
-        text: `Your balance is : ${bal} BCH`,
-        icon: "success",
-      });
-      setIsLoading(false);
-    } catch {
-      Swal.fire({
-        title: "Failed!!!",
-        text: "Error getting Balance.",
-        icon: "warning",
-      });
-    }
-    document.getElementById("bal-form").reset();
-  };
+  // const handleBalCheck = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   console.log("Bal check mnemonics =", mnemonics);
+  //   try {
+  //     // const bal = await getBal(mnemonics);
+  //     const bal = await getBchAccountBalance(raddress);
+  //     console.log("bal =", bal);
+  //     Swal.fire({
+  //       title: "Balance",
+  //       text: `Your balance is : ${bal} BCH`,
+  //       icon: "success",
+  //     });
+  //     setIsLoading(false);
+  //   } catch {
+  //     Swal.fire({
+  //       title: "Failed!!!",
+  //       text: "Error getting Balance.",
+  //       icon: "warning",
+  //     });
+  //   }
+  //   document.getElementById("bal-form").reset();
+  // };
   const handleMax = (e) => {
     e.preventDefault();
     try {
@@ -188,26 +182,6 @@ const Bchwallet = () => {
               </Form>
             </ListGroup>
             <Card.Body>
-              <Form id="bal-form">
-                <FormControl>
-                  <Form.Control
-                    type="text"
-                    placeholder="Address"
-                    size="sm"
-                    name="Address"
-                    onChange={(e) => setRaddress(e.target.value)}
-                  />
-                </FormControl>
-                <ButtonControl>
-                  <ButtonSend
-                    variant="light"
-                    onClick={handleBalCheck}
-                    size="sm"
-                  >
-                    {isLoading ? <Spin /> : "Check Balance"}
-                  </ButtonSend>
-                </ButtonControl>
-              </Form>
             </Card.Body>
           </Card>
         </FormWrapper>
@@ -304,15 +278,6 @@ const ButtonControl = styled.div`
   padding-top: 30px;
   padding-bottom: 40px;
   text-align: center;
-  @media (max-width: 768px) {
-    text-align: center;
-    padding-top: 10px;
-  }
-`;
-const ButtonControl1 = styled.div`
-padding-top: 10px;  
-padding-bottom: 10px;
-  text-align: right;
   @media (max-width: 768px) {
     text-align: center;
     padding-top: 10px;
