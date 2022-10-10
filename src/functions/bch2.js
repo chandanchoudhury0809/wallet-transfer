@@ -12,7 +12,7 @@ export async function sendBch(
   Amount,
   bala,
   SEND_MNEMONIC,
-  txnCost
+  // txnCost
 ) {
   try {
     const NETWORK = IS_DEV ? "testnet" : "mainnet";
@@ -80,8 +80,8 @@ export async function sendBch(
 
       transactionBuilder.addInput(thisUtxo.tx_hash, thisUtxo.tx_pos);
     });
-
-    const txFee = txnCost;
+    const feeOptions = await getFee(SEND_ADDR);
+    const txFee = feeOptions.safe;
     // const remainder = originalAmount - satoshisToSend - txFee;
 
     if (sendAmount - txFee < 0) {
@@ -186,3 +186,36 @@ function changeAddrFromMnemonic(mnemonic) {
 export const toBCH = (amount) => {
   return new BigNumber(amount).dividedBy(1e8);
 };
+
+///senders public addr = cashAcc
+export function getFee (cashAcc) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      console.log('cash', cashAcc)
+      if(cashAcc === undefined){
+        resolve({
+          avg: 0,
+          fast: 0,
+          safe: 0,
+        })
+      }
+      let bchjs = new BCHJS({ restURL: "https://bchn.fullstack.cash/v5/" })
+      const utxos = await bchjs.Electrumx.utxo(cashAcc)
+
+      const byteCount = bchjs.BitcoinCash.getByteCount(
+        { P2PKH: utxos.utxos.length },
+        { P2PKH: 2 }
+      )
+      console.log(`Transaction byte count: ${byteCount}`)
+      const satoshisPerByte = 1.2
+      const fee = Math.floor(satoshisPerByte * byteCount)
+      resolve({
+        avg: new BigNumber(fee).plus(100).toNumber(),
+        fast: new BigNumber(fee).plus(200).toNumber(),
+        safe: new BigNumber(fee).toNumber(),
+      })
+    } catch (error) {
+      reject(error)
+    }
+  })
+}
