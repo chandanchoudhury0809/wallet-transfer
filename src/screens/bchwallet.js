@@ -48,14 +48,12 @@ const Bchwallet = () => {
       console.log("address =", raddress);
       console.log("amount =", raddress);
       console.log("mnemonics =", mnemonics);
-      const txn = "";
       const txid = await sendBch(
         saddress,
         raddress,
         amount_to_transfer_trimmed,
         selbal,
         mnemonics,
-        txn
       );
       swal({
         title: "Sent!!!",
