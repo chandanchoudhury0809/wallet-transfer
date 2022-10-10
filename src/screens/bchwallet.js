@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Form, Button } from "react-bootstrap";
-import Card from 'react-bootstrap/Card';
-import ListGroup from 'react-bootstrap/ListGroup';
+import Card from "react-bootstrap/Card";
+import ListGroup from "react-bootstrap/ListGroup";
 import swal from "sweetalert";
 import { sendBch } from "../functions/bchUtils";
 import { getBchAccountBalance } from "../functions/bch2";
-import Spinner from 'react-bootstrap/Spinner';
+import Spinner from "react-bootstrap/Spinner";
 
 function Spin() {
   return (
@@ -16,7 +16,6 @@ function Spin() {
   );
 }
 const Bchwallet = () => {
-
   const [raddress, setRaddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [saddress, setSaddress] = useState("");
@@ -31,8 +30,7 @@ const Bchwallet = () => {
         console.log("Here is the balance", balance.toString());
       };
       getBalance();
-    }
-    catch (err) {
+    } catch (err) {
       swal({
         title: "Failed!!!",
         text: err.message,
@@ -43,15 +41,22 @@ const Bchwallet = () => {
   }, [saddress]);
   const handleSend = async (e) => {
     let amount_to_transfer_trimmed = String(parseFloat(amount).toFixed(7));
-    let selbal = String(parseFloat(this.state.balance).toFixed(7));
+    const bal = await getBchAccountBalance(saddress);
+    let selbal = String(parseFloat(bal).toFixed(7));
     e.preventDefault();
     try {
-
       console.log("address =", raddress);
       console.log("amount =", raddress);
       console.log("mnemonics =", mnemonics);
       const txn = "";
-      const txid = await sendBch(saddress, raddress, amount_to_transfer_trimmed, selbal, mnemonics, txn);
+      const txid = await sendBch(
+        saddress,
+        raddress,
+        amount_to_transfer_trimmed,
+        selbal,
+        mnemonics,
+        txn
+      );
       swal({
         title: "Sent!!!",
         text: `Transaction successful. Transaction ID : ${txid}`,
@@ -89,93 +94,96 @@ const Bchwallet = () => {
     }
     document.getElementById("bal-form").reset();
   };
-  return (<>
-
-
-    <Wrapper>
-      <FormWrapper>
-        <Card border="primary" style={{ width: '36rem' }}>
-          <Card.Body>
-            <Card.Title> <h1>Wallet Pay</h1></Card.Title>
-            <Card.Text>
-              Send BCH to any address with blazing fast speed, low fees and top notch security!
-            </Card.Text>
-          </Card.Body>
-          <ListGroup className="list-group-flush">
-            <Form id="form">
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Sender's Address"
-                  size="sm"
-                  name="Receiver's Address"
-                  onChange={(e) => setSaddress(e.target.value)}
-                />
-              </FormControl>
-              <br />
-              <ListGroup.Item>Balance: {balance}</ListGroup.Item>
-              <br />
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Receiver's Address"
-                  size="sm"
-                  name="Receiver's Address"
-                  onChange={(e) => setRaddress(e.target.value)}
-                />
-              </FormControl>
-              <br />
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Amount to Send"
-                  size="sm"
-                  name="Amount"
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </FormControl>
-              <br />
-              <FormControl>
-                <Form.Control
-                  type="textarea"
-                  placeholder="Mnemonics"
-                  size="sm"
-                  name="Mnemonics"
-                  onChange={(e) => setMnemonic(e.target.value)}
-                />
-              </FormControl>
-              <ButtonControl>
-                <ButtonSend variant="dark" onClick={handleSend} size="sm">
-                  Send
-                </ButtonSend>
-              </ButtonControl>
-            </Form>
-          </ListGroup>
-          <Card.Body>
-            <Form id="bal-form">
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Address"
-                  size="sm"
-                  name="Address"
-                  onChange={(e) => setRaddress(e.target.value)}
-                />
-              </FormControl>
-              <ButtonControl>
-                <ButtonSend variant="light" onClick={handleBalCheck} size="sm">
-                  {isLoading ? <Spin /> : "Check Balance"}
-                </ButtonSend>
-              </ButtonControl>
-            </Form>
-            <Card.Link href="https://squbix.com">Squbix</Card.Link>
-            <br />
-            <Card.Link href="https://www.linkedin.com/company/squbix/mycompany/">LinkedIn</Card.Link>
-          </Card.Body>
-        </Card>
-      </FormWrapper>
-    </Wrapper>
-  </>
+  return (
+    <>
+      <Wrapper>
+        <FormWrapper>
+          <Card border="primary" style={{ width: "36rem" }}>
+            <Card.Body>
+              <Card.Title>
+                {" "}
+                <h1>Wallet Pay</h1>
+              </Card.Title>
+              <Card.Text>
+                Send BCH to any address.
+              </Card.Text>
+            </Card.Body>
+            <ListGroup className="list-group-flush">
+              <Form id="form">
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Sender's Address"
+                    size="sm"
+                    name="Receiver's Address"
+                    onChange={(e) => setSaddress(e.target.value)}
+                  />
+                </FormControl>
+                <br />
+                <ListGroup.Item>Balance: {balance}</ListGroup.Item>
+                <br />
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Receiver's Address"
+                    size="sm"
+                    name="Receiver's Address"
+                    onChange={(e) => setRaddress(e.target.value)}
+                  />
+                </FormControl>
+                <br />
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Amount to Send"
+                    size="sm"
+                    name="Amount"
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </FormControl>
+                <br />
+                <FormControl>
+                  <Form.Control
+                    type="textarea"
+                    placeholder="Mnemonics"
+                    size="sm"
+                    name="Mnemonics"
+                    onChange={(e) => setMnemonic(e.target.value)}
+                  />
+                </FormControl>
+                <ButtonControl>
+                  <ButtonSend variant="dark" onClick={handleSend} size="sm">
+                    Send
+                  </ButtonSend>
+                </ButtonControl>
+              </Form>
+            </ListGroup>
+            <Card.Body>
+              <Form id="bal-form">
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Address"
+                    size="sm"
+                    name="Address"
+                    onChange={(e) => setRaddress(e.target.value)}
+                  />
+                </FormControl>
+                <ButtonControl>
+                  <ButtonSend
+                    variant="light"
+                    onClick={handleBalCheck}
+                    size="sm"
+                  >
+                    {isLoading ? <Spin /> : "Check Balance"}
+                  </ButtonSend>
+                </ButtonControl>
+              </Form>
+            </Card.Body>
+          </Card>
+        </FormWrapper>
+      </Wrapper>
+    </>
   );
 };
 
@@ -275,7 +283,7 @@ const ButtonControl = styled.div`
 const ButtonSend = styled(Button)`
   padding: 10px 45px;
   border-radius: 10px;
-  color: #ffffff; ;
+  color: #ffffff;
   border: none;
   background: #1240c2;
   text-align: center;
