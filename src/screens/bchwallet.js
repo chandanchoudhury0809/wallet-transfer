@@ -4,7 +4,7 @@ import { Form, Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import ListGroup from "react-bootstrap/ListGroup";
 import swal from "sweetalert";
-import { sendBch } from "../functions/bchUtils";
+import { sendBch } from "../functions/bch2";
 import { getBchAccountBalance } from "../functions/bch2";
 import Spinner from "react-bootstrap/Spinner";
 
@@ -92,6 +92,9 @@ const Bchwallet = () => {
     }
     document.getElementById("bal-form").reset();
   };
+  const handleMax = () => {
+
+  }
   return (
     <>
       <Wrapper>
@@ -139,6 +142,15 @@ const Bchwallet = () => {
                     onChange={(e) => setAmount(e.target.value)}
                   />
                 </FormControl>
+                <ButtonControl1>
+                  <ButtonSend
+                    variant="light"
+                    onClick={handleMax}
+                    size="sm"
+                  >
+                    Send Max
+                  </ButtonSend>
+                </ButtonControl1>
                 <br />
                 <FormControl>
                   <Form.Control
@@ -278,6 +290,15 @@ const ButtonControl = styled.div`
     padding-top: 10px;
   }
 `;
+const ButtonControl1 = styled.div`
+padding-top: 10px;  
+padding-bottom: 10px;
+  text-align: right;
+  @media (max-width: 768px) {
+    text-align: center;
+    padding-top: 10px;
+  }
+`;
 const ButtonSend = styled(Button)`
   padding: 10px 45px;
   border-radius: 10px;
@@ -287,5 +308,8 @@ const ButtonSend = styled(Button)`
   text-align: center;
   @media (max-width: 768px) {
     margin: 50px 0;
+  }
+  :hover {
+    color: pink;
   }
 `;
