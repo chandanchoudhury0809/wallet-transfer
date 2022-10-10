@@ -25,7 +25,9 @@ jobs:
       uses: borales/actions-yarn@v3.0.0
       with:
         cmd: install
-    - run: yarn deploy
+    - run: yarn build
+    - run: ls
+    - run: node ./node_modules/gh-pages/bin/gh-pages.js -d build 
     - run: git add .
     - run: git commit -m "Deploying latest commit"
     - run: git push origin master
