@@ -20,17 +20,24 @@ const Bchwallet = () => {
   const [raddress, setRaddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [saddress, setSaddress] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [balance, setBalance] = useState("0");
   const [mnemonics, setMnemonic] = useState("");
+  const [maxAmt, setMaxAmt] = useState(0);
   useEffect(() => {
     try {
       const getBalance = async () => {
         const balance = await getBchAccountBalance(saddress, false);
+        const fee = await getFee(saddress);
+        setMaxAmt((balance * 1e8 - fee.safe) / 1e8);
         setBalance(balance.toString());
         console.log("Here is the balance", balance.toString());
+        console.log("Here is the fee", fee.safe);
+        console.log("Here is the max amount", maxAmt);
+
       };
       getBalance();
+
     } catch (err) {
       Swal.fire({
         title: "Failed!!!",
@@ -39,7 +46,8 @@ const Bchwallet = () => {
       });
       setBalance(0);
     }
-  }, [saddress]);
+  }, [saddress, amount, maxAmt]);
+
   const handleSend = async (e) => {
     let amount_to_transfer_trimmed = String(parseFloat(amount).toFixed(7));
     const bal = await getBchAccountBalance(saddress);
@@ -93,54 +101,15 @@ const Bchwallet = () => {
     }
     document.getElementById("bal-form").reset();
   };
-  const handleMax = async (e) => {
-    const bal = await getBchAccountBalance(saddress);
-    const fee = await getFee();
-    let selbal = String(parseFloat(bal).toFixed(7));
-    const maxamt = bal - fee.safe;
+  const handleMax = (e) => {
     e.preventDefault();
     try {
-      console.log(fee.safe + "fee");
-      Swal.fire({
-        title: 'Are you sure?',
-        text: `Your Max Amount is : ${maxamt} BCH`,
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: 'Send',
-        denyButtonText: `Don't send`,
-      }).then((result) => {
-        /* Read more about isConfirmed, isDenied below */
-        if (result.isConfirmed) {
-          async function send() {
-            const txid = await sendBch(
-              saddress,
-              raddress,
-              maxamt,
-              selbal,
-              mnemonics,
-            );
-            Swal.fire({
-              title: "Sent!!!",
-              text: `Transaction successful. Transaction ID : ${txid}`,
-              icon: 'success',
-            })
-          }
-          send();
-        } else if (result.isDenied) {
-          Swal.fire('Changes are not saved', '', 'info')
-        }
-      })
+      setAmount(maxAmt);
+      document.getElementById("amount").value = maxAmt;
+      console.log("maxAmt =", maxAmt);
     } catch {
-      Swal.fire({
-        title: "Failed!!!",
-        text: "Transaction Failed.",
-        icon: "error",
-        html: `<p>Fee : ${fee.safe}</p><p>Balance : ${bal} <br> Max Amount : ${maxamt} <br> ${e.message} </p>
-        </p>`
-
-      });
+      console.log("Error setting max amount");
     }
-    document.getElementById("form").reset();
   };
   return (
     <>
@@ -182,13 +151,24 @@ const Bchwallet = () => {
                 <br />
                 <FormControl>
                   <Form.Control
-                    type="text"
+                    type="number"
                     placeholder="Amount to Send"
                     size="sm"
                     name="Amount"
                     onChange={(e) => setAmount(e.target.value)}
+                    value={amount}
+                    id="amount"
                   />
                 </FormControl>
+                <br />
+                <ButtonSend
+                  variant="light"
+                  onClick={handleMax}
+                  size="sm"
+                  style={{ marginBottom: "10px" }}
+                >
+                  Send Max
+                </ButtonSend>
                 <br />
                 <FormControl>
                   <Form.Control
@@ -204,14 +184,6 @@ const Bchwallet = () => {
                     Send
                   </ButtonSend>
                   <br />
-                  <ButtonSend
-                    variant="light"
-                    onClick={handleMax}
-                    size="sm"
-                    style={{ marginTop: "10px" }}
-                  >
-                    Send Max
-                  </ButtonSend>
                 </ButtonControl>
               </Form>
             </ListGroup>
