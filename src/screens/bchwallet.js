@@ -3,10 +3,11 @@ import styled from "styled-components";
 import { Form, Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import ListGroup from "react-bootstrap/ListGroup";
-import swal from "sweetalert";
-import { sendBch } from "../functions/bchUtils";
+import Swal from "sweetalert2";
+import { sendBch } from "../functions/bch2";
 import { getBchAccountBalance } from "../functions/bch2";
 import Spinner from "react-bootstrap/Spinner";
+import { getFee } from "../functions/bch2";
 
 function Spin() {
   return (
@@ -19,26 +20,34 @@ const Bchwallet = () => {
   const [raddress, setRaddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [saddress, setSaddress] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [balance, setBalance] = useState("0");
   const [mnemonics, setMnemonic] = useState("");
+  const [maxAmt, setMaxAmt] = useState(0);
   useEffect(() => {
     try {
       const getBalance = async () => {
         const balance = await getBchAccountBalance(saddress, false);
+        const fee = await getFee(saddress);
+        setMaxAmt((balance * 1e8 - fee.safe) / 1e8);
         setBalance(balance.toString());
         console.log("Here is the balance", balance.toString());
+        console.log("Here is the fee", fee.safe);
+        console.log("Here is the max amount", maxAmt);
+
       };
       getBalance();
+
     } catch (err) {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: err.message,
-        icon: "warning",
+        icon: "error",
       });
       setBalance(0);
     }
-  }, [saddress]);
+  }, [saddress, amount, maxAmt]);
+
   const handleSend = async (e) => {
     let amount_to_transfer_trimmed = String(parseFloat(amount).toFixed(7));
     const bal = await getBchAccountBalance(saddress);
@@ -55,16 +64,16 @@ const Bchwallet = () => {
         selbal,
         mnemonics,
       );
-      swal({
+      Swal.fire({
         title: "Sent!!!",
         text: `Transaction successful. Transaction ID : ${txid}`,
-        icon: "success",
-      });
+        icon: 'success',
+      })
     } catch {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: "Transaction Failed.",
-        icon: "warning",
+        icon: "error",
       });
     }
     document.getElementById("form").reset();
@@ -77,20 +86,30 @@ const Bchwallet = () => {
       // const bal = await getBal(mnemonics);
       const bal = await getBchAccountBalance(raddress);
       console.log("bal =", bal);
-      swal({
+      Swal.fire({
         title: "Balance",
         text: `Your balance is : ${bal} BCH`,
         icon: "success",
       });
       setIsLoading(false);
     } catch {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: "Error getting Balance.",
         icon: "warning",
       });
     }
     document.getElementById("bal-form").reset();
+  };
+  const handleMax = (e) => {
+    e.preventDefault();
+    try {
+      setAmount(maxAmt);
+      document.getElementById("amount").value = maxAmt;
+      console.log("maxAmt =", maxAmt);
+    } catch {
+      console.log("Error setting max amount");
+    }
   };
   return (
     <>
@@ -132,13 +151,24 @@ const Bchwallet = () => {
                 <br />
                 <FormControl>
                   <Form.Control
-                    type="text"
+                    type="number"
                     placeholder="Amount to Send"
                     size="sm"
                     name="Amount"
                     onChange={(e) => setAmount(e.target.value)}
+                    value={amount}
+                    id="amount"
                   />
                 </FormControl>
+                <br />
+                <ButtonSend
+                  variant="light"
+                  onClick={handleMax}
+                  size="sm"
+                  style={{ marginBottom: "10px" }}
+                >
+                  Send Max
+                </ButtonSend>
                 <br />
                 <FormControl>
                   <Form.Control
@@ -153,6 +183,7 @@ const Bchwallet = () => {
                   <ButtonSend variant="dark" onClick={handleSend} size="sm">
                     Send
                   </ButtonSend>
+                  <br />
                 </ButtonControl>
               </Form>
             </ListGroup>
@@ -278,6 +309,15 @@ const ButtonControl = styled.div`
     padding-top: 10px;
   }
 `;
+const ButtonControl1 = styled.div`
+padding-top: 10px;  
+padding-bottom: 10px;
+  text-align: right;
+  @media (max-width: 768px) {
+    text-align: center;
+    padding-top: 10px;
+  }
+`;
 const ButtonSend = styled(Button)`
   padding: 10px 45px;
   border-radius: 10px;
@@ -287,5 +327,8 @@ const ButtonSend = styled(Button)`
   text-align: center;
   @media (max-width: 768px) {
     margin: 50px 0;
+  }
+  :hover {
+    color: pink;
   }
 `;
