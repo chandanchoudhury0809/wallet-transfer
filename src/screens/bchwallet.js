@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Form, Button } from "react-bootstrap";
-import Card from 'react-bootstrap/Card';
-import ListGroup from 'react-bootstrap/ListGroup';
-import swal from "sweetalert";
-import { sendBch } from "../functions/bchUtils";
+import Card from "react-bootstrap/Card";
+import ListGroup from "react-bootstrap/ListGroup";
+import Swal from "sweetalert2";
+import { sendBch } from "../functions/bch2";
 import { getBchAccountBalance } from "../functions/bch2";
-import Spinner from 'react-bootstrap/Spinner';
+import Spinner from "react-bootstrap/Spinner";
+import { getFee } from "../functions/bch2";
 
 function Spin() {
   return (
@@ -16,7 +17,6 @@ function Spin() {
   );
 }
 const Bchwallet = () => {
-
   const [raddress, setRaddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [saddress, setSaddress] = useState("");
@@ -31,37 +31,41 @@ const Bchwallet = () => {
         console.log("Here is the balance", balance.toString());
       };
       getBalance();
-    }
-    catch (err) {
-      swal({
+    } catch (err) {
+      Swal.fire({
         title: "Failed!!!",
         text: err.message,
-        icon: "warning",
+        icon: "error",
       });
       setBalance(0);
     }
   }, [saddress]);
   const handleSend = async (e) => {
     let amount_to_transfer_trimmed = String(parseFloat(amount).toFixed(7));
-    let selbal = String(parseFloat(this.state.balance).toFixed(7));
+    const bal = await getBchAccountBalance(saddress);
+    let selbal = String(parseFloat(bal).toFixed(7));
     e.preventDefault();
     try {
-
       console.log("address =", raddress);
       console.log("amount =", raddress);
       console.log("mnemonics =", mnemonics);
-      const txn = "";
-      const txid = await sendBch(saddress, raddress, amount_to_transfer_trimmed, selbal, mnemonics, txn);
-      swal({
+      const txid = await sendBch(
+        saddress,
+        raddress,
+        amount_to_transfer_trimmed,
+        selbal,
+        mnemonics,
+      );
+      Swal.fire({
         title: "Sent!!!",
         text: `Transaction successful. Transaction ID : ${txid}`,
-        icon: "success",
-      });
+        icon: 'success',
+      })
     } catch {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: "Transaction Failed.",
-        icon: "warning",
+        icon: "error",
       });
     }
     document.getElementById("form").reset();
@@ -74,14 +78,14 @@ const Bchwallet = () => {
       // const bal = await getBal(mnemonics);
       const bal = await getBchAccountBalance(raddress);
       console.log("bal =", bal);
-      swal({
+      Swal.fire({
         title: "Balance",
         text: `Your balance is : ${bal} BCH`,
         icon: "success",
       });
       setIsLoading(false);
     } catch {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: "Error getting Balance.",
         icon: "warning",
@@ -89,93 +93,154 @@ const Bchwallet = () => {
     }
     document.getElementById("bal-form").reset();
   };
-  return (<>
+  const handleMax = async (e) => {
+    const bal = await getBchAccountBalance(saddress);
+    const fee = await getFee();
+    let selbal = String(parseFloat(bal).toFixed(7));
+    const maxamt = bal - fee.safe;
+    e.preventDefault();
+    try {
+      console.log(fee.safe + "fee");
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `Your Max Amount is : ${maxamt} BCH`,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Send',
+        denyButtonText: `Don't send`,
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          async function send() {
+            const txid = await sendBch(
+              saddress,
+              raddress,
+              maxamt,
+              selbal,
+              mnemonics,
+            );
+            Swal.fire({
+              title: "Sent!!!",
+              text: `Transaction successful. Transaction ID : ${txid}`,
+              icon: 'success',
+            })
+          }
+          send();
+        } else if (result.isDenied) {
+          Swal.fire('Changes are not saved', '', 'info')
+        }
+      })
+    } catch {
+      Swal.fire({
+        title: "Failed!!!",
+        text: "Transaction Failed.",
+        icon: "error",
+        html: `<p>Fee : ${fee.safe}</p><p>Balance : ${bal} <br> Max Amount : ${maxamt} <br> ${e.message} </p>
+        </p>`
 
-
-    <Wrapper>
-      <FormWrapper>
-        <Card border="primary" style={{ width: '36rem' }}>
-          <Card.Body>
-            <Card.Title> <h1>Wallet Pay</h1></Card.Title>
-            <Card.Text>
-              Send BCH to any address with blazing fast speed, low fees and top notch security!
-            </Card.Text>
-          </Card.Body>
-          <ListGroup className="list-group-flush">
-            <Form id="form">
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Sender's Address"
-                  size="sm"
-                  name="Receiver's Address"
-                  onChange={(e) => setSaddress(e.target.value)}
-                />
-              </FormControl>
-              <br />
-              <ListGroup.Item>Balance: {balance}</ListGroup.Item>
-              <br />
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Receiver's Address"
-                  size="sm"
-                  name="Receiver's Address"
-                  onChange={(e) => setRaddress(e.target.value)}
-                />
-              </FormControl>
-              <br />
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Amount to Send"
-                  size="sm"
-                  name="Amount"
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </FormControl>
-              <br />
-              <FormControl>
-                <Form.Control
-                  type="textarea"
-                  placeholder="Mnemonics"
-                  size="sm"
-                  name="Mnemonics"
-                  onChange={(e) => setMnemonic(e.target.value)}
-                />
-              </FormControl>
-              <ButtonControl>
-                <ButtonSend variant="dark" onClick={handleSend} size="sm">
-                  Send
-                </ButtonSend>
-              </ButtonControl>
-            </Form>
-          </ListGroup>
-          <Card.Body>
-            <Form id="bal-form">
-              <FormControl>
-                <Form.Control
-                  type="text"
-                  placeholder="Address"
-                  size="sm"
-                  name="Address"
-                  onChange={(e) => setRaddress(e.target.value)}
-                />
-              </FormControl>
-              <ButtonControl>
-                <ButtonSend variant="light" onClick={handleBalCheck} size="sm">
-                  {isLoading ? <Spin /> : "Check Balance"}
-                </ButtonSend>
-              </ButtonControl>
-            </Form>
-            <Card.Link href="https://squbix.com">Squbix</Card.Link>
-            <br />
-            <Card.Link href="https://www.linkedin.com/company/squbix/mycompany/">LinkedIn</Card.Link>
-          </Card.Body>
-        </Card>
-      </FormWrapper>
-    </Wrapper>
-  </>
+      });
+    }
+    document.getElementById("form").reset();
+  };
+  return (
+    <>
+      <Wrapper>
+        <FormWrapper>
+          <Card border="primary" style={{ width: "36rem" }}>
+            <Card.Body>
+              <Card.Title>
+                {" "}
+                <h1>Wallet Pay</h1>
+              </Card.Title>
+              <Card.Text>
+                Send BCH to any address.
+              </Card.Text>
+            </Card.Body>
+            <ListGroup className="list-group-flush">
+              <Form id="form">
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Sender's Address"
+                    size="sm"
+                    name="Receiver's Address"
+                    onChange={(e) => setSaddress(e.target.value)}
+                  />
+                </FormControl>
+                <br />
+                <ListGroup.Item>Balance: {balance}</ListGroup.Item>
+                <br />
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Receiver's Address"
+                    size="sm"
+                    name="Receiver's Address"
+                    onChange={(e) => setRaddress(e.target.value)}
+                  />
+                </FormControl>
+                <br />
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Amount to Send"
+                    size="sm"
+                    name="Amount"
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </FormControl>
+                <br />
+                <FormControl>
+                  <Form.Control
+                    type="textarea"
+                    placeholder="Mnemonics"
+                    size="sm"
+                    name="Mnemonics"
+                    onChange={(e) => setMnemonic(e.target.value)}
+                  />
+                </FormControl>
+                <ButtonControl>
+                  <ButtonSend variant="dark" onClick={handleSend} size="sm">
+                    Send
+                  </ButtonSend>
+                  <br />
+                  <ButtonSend
+                    variant="light"
+                    onClick={handleMax}
+                    size="sm"
+                    style={{ marginTop: "10px" }}
+                  >
+                    Send Max
+                  </ButtonSend>
+                </ButtonControl>
+              </Form>
+            </ListGroup>
+            <Card.Body>
+              <Form id="bal-form">
+                <FormControl>
+                  <Form.Control
+                    type="text"
+                    placeholder="Address"
+                    size="sm"
+                    name="Address"
+                    onChange={(e) => setRaddress(e.target.value)}
+                  />
+                </FormControl>
+                <ButtonControl>
+                  <ButtonSend
+                    variant="light"
+                    onClick={handleBalCheck}
+                    size="sm"
+                  >
+                    {isLoading ? <Spin /> : "Check Balance"}
+                  </ButtonSend>
+                </ButtonControl>
+              </Form>
+            </Card.Body>
+          </Card>
+        </FormWrapper>
+      </Wrapper>
+    </>
   );
 };
 
@@ -272,14 +337,26 @@ const ButtonControl = styled.div`
     padding-top: 10px;
   }
 `;
+const ButtonControl1 = styled.div`
+padding-top: 10px;  
+padding-bottom: 10px;
+  text-align: right;
+  @media (max-width: 768px) {
+    text-align: center;
+    padding-top: 10px;
+  }
+`;
 const ButtonSend = styled(Button)`
   padding: 10px 45px;
   border-radius: 10px;
-  color: #ffffff; ;
+  color: #ffffff;
   border: none;
   background: #1240c2;
   text-align: center;
   @media (max-width: 768px) {
     margin: 50px 0;
+  }
+  :hover {
+    color: pink;
   }
 `;
