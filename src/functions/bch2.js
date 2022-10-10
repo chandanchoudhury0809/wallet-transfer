@@ -207,7 +207,7 @@ export function getFee (cashAcc) {
         { P2PKH: 2 }
       )
       console.log(`Transaction byte count: ${byteCount}`)
-      const satoshisPerByte = 1.2
+      const satoshisPerByte = 2
       const fee = Math.floor(satoshisPerByte * byteCount)
       resolve({
         avg: new BigNumber(fee).plus(100).toNumber(),
