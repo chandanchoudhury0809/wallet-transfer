@@ -3,10 +3,11 @@ import styled from "styled-components";
 import { Form, Button } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import ListGroup from "react-bootstrap/ListGroup";
-import swal from "sweetalert";
+import Swal from "sweetalert2";
 import { sendBch } from "../functions/bch2";
 import { getBchAccountBalance } from "../functions/bch2";
 import Spinner from "react-bootstrap/Spinner";
+import { getFee } from "../functions/bch2";
 
 function Spin() {
   return (
@@ -31,10 +32,10 @@ const Bchwallet = () => {
       };
       getBalance();
     } catch (err) {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: err.message,
-        icon: "warning",
+        icon: "error",
       });
       setBalance(0);
     }
@@ -55,16 +56,16 @@ const Bchwallet = () => {
         selbal,
         mnemonics,
       );
-      swal({
+      Swal.fire({
         title: "Sent!!!",
         text: `Transaction successful. Transaction ID : ${txid}`,
-        icon: "success",
-      });
+        icon: 'success',
+      })
     } catch {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: "Transaction Failed.",
-        icon: "warning",
+        icon: "error",
       });
     }
     document.getElementById("form").reset();
@@ -77,14 +78,14 @@ const Bchwallet = () => {
       // const bal = await getBal(mnemonics);
       const bal = await getBchAccountBalance(raddress);
       console.log("bal =", bal);
-      swal({
+      Swal.fire({
         title: "Balance",
         text: `Your balance is : ${bal} BCH`,
         icon: "success",
       });
       setIsLoading(false);
     } catch {
-      swal({
+      Swal.fire({
         title: "Failed!!!",
         text: "Error getting Balance.",
         icon: "warning",
@@ -92,9 +93,55 @@ const Bchwallet = () => {
     }
     document.getElementById("bal-form").reset();
   };
-  const handleMax = () => {
+  const handleMax = async (e) => {
+    const bal = await getBchAccountBalance(saddress);
+    const fee = await getFee();
+    let selbal = String(parseFloat(bal).toFixed(7));
+    const maxamt = bal - fee.safe;
+    e.preventDefault();
+    try {
+      console.log(fee.safe + "fee");
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `Your Max Amount is : ${maxamt} BCH`,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Send',
+        denyButtonText: `Don't send`,
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          async function send() {
+            const txid = await sendBch(
+              saddress,
+              raddress,
+              maxamt,
+              selbal,
+              mnemonics,
+            );
+            Swal.fire({
+              title: "Sent!!!",
+              text: `Transaction successful. Transaction ID : ${txid}`,
+              icon: 'success',
+            })
+          }
+          send();
+        } else if (result.isDenied) {
+          Swal.fire('Changes are not saved', '', 'info')
+        }
+      })
+    } catch {
+      Swal.fire({
+        title: "Failed!!!",
+        text: "Transaction Failed.",
+        icon: "error",
+        html: `<p>Fee : ${fee.safe}</p><p>Balance : ${bal} <br> Max Amount : ${maxamt} <br> ${e.message} </p>
+        </p>`
 
-  }
+      });
+    }
+    document.getElementById("form").reset();
+  };
   return (
     <>
       <Wrapper>
@@ -142,15 +189,6 @@ const Bchwallet = () => {
                     onChange={(e) => setAmount(e.target.value)}
                   />
                 </FormControl>
-                <ButtonControl1>
-                  <ButtonSend
-                    variant="light"
-                    onClick={handleMax}
-                    size="sm"
-                  >
-                    Send Max
-                  </ButtonSend>
-                </ButtonControl1>
                 <br />
                 <FormControl>
                   <Form.Control
@@ -164,6 +202,15 @@ const Bchwallet = () => {
                 <ButtonControl>
                   <ButtonSend variant="dark" onClick={handleSend} size="sm">
                     Send
+                  </ButtonSend>
+                  <br />
+                  <ButtonSend
+                    variant="light"
+                    onClick={handleMax}
+                    size="sm"
+                    style={{ marginTop: "10px" }}
+                  >
+                    Send Max
                   </ButtonSend>
                 </ButtonControl>
               </Form>
