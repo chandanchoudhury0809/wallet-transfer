@@ -16,7 +16,7 @@ export async function sendBch(
 ) {
   try {
     const NETWORK = IS_DEV ? "testnet" : "mainnet";
-    let bchjs = new BCHJS({ restURL: IS_DEV ? "https://bchn.fullstack.cash/v5/" : "https://testnet3.fullstack.cash/v5/" });
+    let bchjs = new BCHJS({ restURL: IS_DEV ? "https://testnet3.fullstack.cash/v5/" : "https://bchn.fullstack.cash/v5/" });
     // Get the balance of the sending address.
     const balance = await getBchAccountBalance(SEND_ADDR, false);
     let AMT = toSatoshis(Amount);
@@ -136,7 +136,7 @@ export async function getBchAccountBalance(account_address) {
   //Fetch the BCH balance of the address
   try {
     console.log("Address from main page =", account_address);
-    const bchjs = new BCHJS({ restURL: IS_DEV ? "https://bchn.fullstack.cash/v5/" : "https://testnet3.fullstack.cash/v5/" });
+    const bchjs = new BCHJS({ restURL: IS_DEV ? "https://testnet3.fullstack.cash/v5/" : "https://bchn.fullstack.cash/v5/" });
     const balance = await bchjs.Electrumx.balance(account_address);
 
     console.log(JSON.stringify(balance, null, 2));
@@ -165,7 +165,7 @@ export async function getBchAccountBalance(account_address) {
 // }
 
 function changeAddrFromMnemonic(mnemonic) {
-  const bitbox = new BITBOX({ restURL: IS_DEV ? "https://bchn.fullstack.cash/v5/" : "https://testnet3.fullstack.cash/v5/" });
+  const bitbox = new BITBOX({ restURL: IS_DEV ? "https://testnet3.fullstack.cash/v5/" : "https://bchn.fullstack.cash/v5/" });
   // root seed buffer
   const rootSeed = bitbox.Mnemonic.toSeed(mnemonic);
   const NETWORK = IS_DEV ? "testnet" : "mainnet";
@@ -199,7 +199,7 @@ export function getFee (cashAcc) {
           safe: 0,
         })
       }
-      let bchjs = new BCHJS({ restURL: IS_DEV ? "https://bchn.fullstack.cash/v5/" : "https://testnet3.fullstack.cash/v5/" })
+      let bchjs = new BCHJS({ restURL: IS_DEV ? "https://testnet3.fullstack.cash/v5/" : "https://bchn.fullstack.cash/v5/" })
       const utxos = await bchjs.Electrumx.utxo(cashAcc)
 
       const byteCount = bchjs.BitcoinCash.getByteCount(
