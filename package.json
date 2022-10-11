@@ -1,7 +1,7 @@
 {
   "name": "wallet-transfer",
   "version": "0.1.0",
-  "private": true,
+  "homepage": "https://anubhab-patnaik.github.io/wallet-transfer",
   "dependencies": {
     "@psf/bch-js": "^4.15.9",
     "@testing-library/jest-dom": "^5.14.1",
@@ -10,6 +10,7 @@
     "bignumber.js": "^9.0.1",
     "bitbox-sdk": "^8.11.2",
     "crypto": "^1.0.1",
+    "gh-pages": "^4.0.0",
     "minimal-slp-wallet": "^5.2.1",
     "react": "17.0.0",
     "react-bootstrap": "^2.5.0",
@@ -22,9 +23,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false && react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [

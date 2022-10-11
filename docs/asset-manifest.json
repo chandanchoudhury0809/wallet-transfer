@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/wallet-transfer/static/css/main.a617e044.chunk.css",
+    "main.js": "/wallet-transfer/static/js/main.1f066223.chunk.js",
+    "main.js.map": "/wallet-transfer/static/js/main.1f066223.chunk.js.map",
+    "runtime-main.js": "/wallet-transfer/static/js/runtime-main.88f68005.js",
+    "runtime-main.js.map": "/wallet-transfer/static/js/runtime-main.88f68005.js.map",
+    "static/css/2.bf050e21.chunk.css": "/wallet-transfer/static/css/2.bf050e21.chunk.css",
+    "static/js/2.74778bc0.chunk.js": "/wallet-transfer/static/js/2.74778bc0.chunk.js",
+    "static/js/2.74778bc0.chunk.js.map": "/wallet-transfer/static/js/2.74778bc0.chunk.js.map",
+    "static/js/3.88ddeccc.chunk.js": "/wallet-transfer/static/js/3.88ddeccc.chunk.js",
+    "static/js/3.88ddeccc.chunk.js.map": "/wallet-transfer/static/js/3.88ddeccc.chunk.js.map",
+    "index.html": "/wallet-transfer/index.html",
+    "static/css/2.bf050e21.chunk.css.map": "/wallet-transfer/static/css/2.bf050e21.chunk.css.map",
+    "static/css/main.a617e044.chunk.css.map": "/wallet-transfer/static/css/main.a617e044.chunk.css.map",
+    "static/js/2.74778bc0.chunk.js.LICENSE.txt": "/wallet-transfer/static/js/2.74778bc0.chunk.js.LICENSE.txt",
+    "static/media/bootstrap.min.css": "/wallet-transfer/static/media/glyphicons-halflings-regular.be810be3.woff2"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.88f68005.js",
+    "static/css/2.bf050e21.chunk.css",
+    "static/js/2.74778bc0.chunk.js",
+    "static/css/main.a617e044.chunk.css",
+    "static/js/main.1f066223.chunk.js"
+  ]
+}
